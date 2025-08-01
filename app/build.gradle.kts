@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.devtools.ksp)
 }
 
 android {
@@ -56,4 +58,30 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // View Model Library
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    //Material Icons Extended Lib
+    implementation(libs.androidx.material.icons.extended)
+
+    // Koin
+    implementation(libs.koin.android)
+    implementation(libs.koin.core)
+    implementation(libs.koin.compose)
+    implementation(libs.koin.coroutines)
+    implementation(libs.koin.compose.viewmodel)
+    implementation(libs.koin.annotation)
+    ksp(libs.koin.ksp.compiler)
+
+    // Navigation
+    implementation(libs.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
+
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+
+    // KSP dependency for Room compiler
+    ksp(libs.androidx.room.compiler)
 }
