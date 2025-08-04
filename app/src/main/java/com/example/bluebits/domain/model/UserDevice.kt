@@ -1,6 +1,6 @@
 package com.example.bluebits.domain.model
 
-data class BluetoothDevice(
+data class UserDevice(
     val name: String?,
     val address: String,
     val isPaired: Boolean,

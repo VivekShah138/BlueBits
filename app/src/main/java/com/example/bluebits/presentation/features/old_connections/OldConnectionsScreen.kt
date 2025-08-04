@@ -79,6 +79,9 @@ fun OldConnectionsRoot(
                         },
                         onBluetoothRationale = {
                             showBluetoothRationaleDialog = true
+                        },
+                        onLocationRationale = {
+                            showBluetoothRationaleDialog = true
                         }
                     )
                 }

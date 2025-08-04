@@ -9,7 +9,9 @@ val viewModelModule = module {
 
 
     viewModel {
-        OldConnectionsViewModel()
+        OldConnectionsViewModel(
+            oldConnectionsUseCaseWrapper = get()
+        )
     }
 
     viewModel {
