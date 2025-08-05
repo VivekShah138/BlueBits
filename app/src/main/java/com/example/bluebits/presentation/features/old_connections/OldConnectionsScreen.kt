@@ -1,10 +1,17 @@
 package com.example.bluebits.presentation.features.old_connections
 
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Context
+import android.content.Intent
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +33,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.bluebits.presentation.core_components.AppTopBar
 import com.example.bluebits.presentation.core_components.BottomNavigationBar
+import com.example.bluebits.presentation.features.old_connections.components.AvailableDevices
 import com.example.bluebits.ui.theme.BlueBitsTheme
 import org.koin.compose.viewmodel.koinViewModel
 import com.example.bluebits.presentation.features.old_connections.components.PermissionDialogs
@@ -43,6 +51,12 @@ fun OldConnectionsRoot(
     var showBluetoothRationaleDialog by remember { mutableStateOf(false) }
     var showAllRationaleDialog by remember { mutableStateOf(false) }
     var showNotificationsRationaleDialog by remember { mutableStateOf(false) }
+    var showLocationRationaleDialog by remember { mutableStateOf(false) }
+
+    var turnOnBluetoothRationaleDialog by remember { mutableStateOf(false) }
+    var bluetoothEnableRequested by remember { mutableStateOf(false) }
+    var bluetoothEnableDenied by remember { mutableStateOf(false) }
+
     val lifecycleOwner = LocalLifecycleOwner.current
 
 
@@ -50,11 +64,27 @@ fun OldConnectionsRoot(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         results.forEach { permission, isGranted ->
-            if(!isGranted){
+            if (!isGranted) {
                 showAllRationaleDialog = true
             }
         }
     }
+
+    val bluetoothEnableLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        bluetoothEnableRequested = false
+
+        if (result.resultCode == Activity.RESULT_OK) {
+            bluetoothEnableDenied = false
+            viewModel.onEvent(OldConnectionsEvents.StartDeviceDiscovery)
+        } else {
+            bluetoothEnableDenied = true
+            turnOnBluetoothRationaleDialog = true
+        }
+    }
+
+
 
     DisposableEffect(Unit) {
         val observer = object : LifecycleEventObserver {
@@ -64,12 +94,29 @@ fun OldConnectionsRoot(
             ) {
                 if (event == Lifecycle.Event.ON_START) {
                     requestMultiplePermissionLogic(
-                        context,
-                        permissionLauncher,
+                        context = context,
+                        launcher = permissionLauncher,
                         onBluetoothPermissionGranted = {
                             showBluetoothRationaleDialog = false
                             showAllRationaleDialog = false
                             showNotificationsRationaleDialog = false
+
+                            if (state.isBluetoothSupported  && !state.isBluetoothEnabled) {
+                                when {
+                                    !bluetoothEnableRequested && !bluetoothEnableDenied -> {
+                                        bluetoothEnableRequested = true
+                                        val enableBtIntent =
+                                            Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                                        bluetoothEnableLauncher.launch(enableBtIntent)
+                                    }
+
+                                    bluetoothEnableDenied -> {
+                                        turnOnBluetoothRationaleDialog = true
+                                    }
+                                }
+                            } else if (state.isBluetoothSupported && state.isBluetoothEnabled) {
+                                viewModel.onEvent(OldConnectionsEvents.StartDeviceDiscovery)
+                            }
                         },
                         onRationale = {
                             showAllRationaleDialog = true
@@ -81,7 +128,7 @@ fun OldConnectionsRoot(
                             showBluetoothRationaleDialog = true
                         },
                         onLocationRationale = {
-                            showBluetoothRationaleDialog = true
+                            showLocationRationaleDialog = true
                         }
                     )
                 }
@@ -93,22 +140,96 @@ fun OldConnectionsRoot(
         }
     }
 
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                Log.d("OldConnectionsRoot", "Screen stopped, stopping discovery")
+                viewModel.onEvent(OldConnectionsEvents.StopDeviceDiscovery)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    val onStartDiscovery = {
+        requestMultiplePermissionLogic(
+            context = context,
+            launcher = permissionLauncher,
+            onBluetoothPermissionGranted = {
+                showBluetoothRationaleDialog = false
+                showAllRationaleDialog = false
+                showNotificationsRationaleDialog = false
+
+                val bluetoothManager =
+                    context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+                val bluetoothAdapter = bluetoothManager.adapter
+
+                if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled) {
+                    if (!bluetoothEnableRequested && !bluetoothEnableDenied) {
+                        bluetoothEnableRequested = true
+                        val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        bluetoothEnableLauncher.launch(enableBtIntent)
+                    } else if (bluetoothEnableDenied) {
+                        turnOnBluetoothRationaleDialog = true
+                    }
+                } else {
+                    viewModel.onEvent(OldConnectionsEvents.StartDeviceDiscovery)
+                }
+
+            },
+            onRationale = {
+                showAllRationaleDialog = true
+            },
+            onNotificationsRationaleDialog = {
+                showNotificationsRationaleDialog = true
+            },
+            onBluetoothRationale = {
+                showBluetoothRationaleDialog = true
+            },
+            onLocationRationale = {
+                showBluetoothRationaleDialog = true
+            }
+        )
+    }
+
     // Show rationale dialogs if needed
     PermissionDialogs(
         showBluetoothRationaleDialog = showBluetoothRationaleDialog,
         showNotificationsRationaleDialog = showNotificationsRationaleDialog,
+        turnOnBluetoothRationaleDialog = turnOnBluetoothRationaleDialog,
+        showLocationRationaleDialog = showLocationRationaleDialog,
         showAllRationaleDialog = showAllRationaleDialog,
         onDismissBluetooth = { showBluetoothRationaleDialog = false },
         onDismissNotifications = { showNotificationsRationaleDialog = false },
+        onDismissTurnOnBluetooth = { turnOnBluetoothRationaleDialog = false },
+        onDismissLocation = { showLocationRationaleDialog = false},
         onDismissAll = { showAllRationaleDialog = false },
-        onConfirm = { context.createSettingsIntent() }
+        onConfirm = { context.createSettingsIntent() },
+        onBluetoothEnable = {
+            bluetoothEnableDenied = false
+            bluetoothEnableRequested = true
+            val bluetoothManager =
+                context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothAdapter = bluetoothManager.adapter
+            if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled) {
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                bluetoothEnableLauncher.launch(enableBtIntent)
+            } else {
+                viewModel.onEvent(OldConnectionsEvents.StartDeviceDiscovery)
+            }
+
+            turnOnBluetoothRationaleDialog = false
+        }
     )
 
 
     OldConnectionsScreen(
         state = state,
         onEvent = viewModel::onEvent,
-        navController = navController
+        navController = navController,
+        onStartDiscovery = onStartDiscovery
     )
 }
 
@@ -117,6 +238,7 @@ fun OldConnectionsScreen(
     navController: NavController,
     state: OldConnectionsStates,
     onEvent: (OldConnectionsEvents) -> Unit,
+    onStartDiscovery: () -> Unit
 ) {
     Scaffold(
         bottomBar = {
@@ -136,7 +258,10 @@ fun OldConnectionsScreen(
                 .padding(innerPadding),
             contentAlignment = Alignment.Center
         ) {
-            Text("Old Connections Screen")
+            AvailableDevices(
+                onRefreshClicked = onStartDiscovery,
+                devices = state.discoverDeviceList
+            )
         }
     }
 }
@@ -148,7 +273,8 @@ private fun Preview() {
         OldConnectionsScreen(
             state = OldConnectionsStates(),
             onEvent = {},
-            navController = rememberNavController()
+            navController = rememberNavController(),
+            onStartDiscovery = {}
         )
     }
 }

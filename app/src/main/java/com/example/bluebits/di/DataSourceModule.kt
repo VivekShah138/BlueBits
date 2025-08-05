@@ -1,7 +1,23 @@
 package com.example.bluebits.di
 
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Context
+import com.example.bluebits.data.repository.AndroidBluetoothControllerRepository
+import com.example.bluebits.domain.repository.BluetoothControllerRepository
+import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val dataSourceModule = module {
 
+    // Provide BluetoothAdapter
+    single<BluetoothAdapter?> {
+        val context = androidContext()
+        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothManager.adapter
+    }
+
+
+    // Provide the concrete class if needed (for getEnableIntent)
+    single { get<BluetoothControllerRepository>() as AndroidBluetoothControllerRepository }
 }

@@ -1,13 +1,13 @@
-package com.example.bluebits.domain.usecases
+package com.example.bluebits.domain.usecases.device_discovery
 
 import com.example.bluebits.domain.model.UserDevice
 import com.example.bluebits.domain.repository.DeviceDiscoveryRepository
 import kotlinx.coroutines.flow.Flow
 
-class StopDeviceDiscoveryUseCase(
+class StartDeviceDiscoveryUseCase(
     private val repository: DeviceDiscoveryRepository
 ) {
-    operator fun invoke() {
-        return repository.stopDiscovery()
+    operator fun invoke(): Flow<UserDevice>  {
+        return repository.startDiscovery()
     }
 }

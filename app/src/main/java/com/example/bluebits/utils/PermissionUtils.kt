@@ -24,49 +24,6 @@ fun Context.isPermisssionGranted(permission: String): Boolean {
     ) == PackageManager.PERMISSION_GRANTED
 }
 
-//fun requestMultiplePermissionLogic(
-//    context: Context,
-//    launcher: ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>>,
-//    onBluetoothPermissionGranted: () -> Unit,
-//    onRationale: () -> Unit,
-//    onBluetoothRationale: () -> Unit,
-//    onNotificationsRationaleDialog: () -> Unit,
-//) {
-//    val activity = context as Activity
-//
-//    val bluetoothRationale =
-//        ActivityCompat.shouldShowRequestPermissionRationale(activity, BLUETOOTH_SCAN) &&
-//                ActivityCompat.shouldShowRequestPermissionRationale(activity, BLUETOOTH_ADVERTISE) ||
-//                ActivityCompat.shouldShowRequestPermissionRationale(activity, BLUETOOTH_CONNECT)
-//
-//    val notificationRationale =
-//        ActivityCompat.shouldShowRequestPermissionRationale(activity, POST_NOTIFICATIONS)
-//
-//    when {
-//        context.isPermisssionGranted(BLUETOOTH_SCAN) &&
-//                context.isPermisssionGranted(BLUETOOTH_ADVERTISE) &&
-//                context.isPermisssionGranted(BLUETOOTH_CONNECT) &&
-//                context.isPermisssionGranted(ACCESS_FINE_LOCATION)-> {
-//            onBluetoothPermissionGranted()
-//            if (!context.isPermisssionGranted(POST_NOTIFICATIONS)) {
-//                onNotificationsRationaleDialog()
-//            }
-//            Log.i(TAG, "Permissions granted")
-//        }
-//
-//        bluetoothRationale && notificationRationale -> onRationale()
-//        bluetoothRationale -> onBluetoothRationale()
-//        else -> launcher.launch(
-//            arrayOf(
-//                BLUETOOTH_SCAN,
-//                BLUETOOTH_ADVERTISE,
-//                BLUETOOTH_CONNECT,
-//                POST_NOTIFICATIONS
-//            )
-//        )
-//    }
-//}
-
 fun requestMultiplePermissionLogic(
     context: Context,
     launcher: ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>>,
@@ -95,15 +52,18 @@ fun requestMultiplePermissionLogic(
                 context.isPermisssionGranted(BLUETOOTH_CONNECT) &&
                 context.isPermisssionGranted(ACCESS_FINE_LOCATION) -> {
             onBluetoothPermissionGranted()
+
             if (!context.isPermisssionGranted(POST_NOTIFICATIONS)) {
                 onNotificationsRationaleDialog()
             }
+
             Log.i(TAG, "All required permissions granted")
         }
 
         bluetoothRationale && locationRationale && notificationRationale -> onRationale()
         bluetoothRationale && locationRationale -> onBluetoothRationale()
         locationRationale -> onLocationRationale()
+
         else -> launcher.launch(
             arrayOf(
                 BLUETOOTH_SCAN,

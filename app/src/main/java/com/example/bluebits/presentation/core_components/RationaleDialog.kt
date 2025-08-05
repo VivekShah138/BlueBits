@@ -36,6 +36,8 @@ fun RationaleDialog(
     iconContentDescription: String = "",
     onDismiss: () -> Unit = {},
     onConfirm: () -> Unit = {},
+    dismissText: String = stringResource(R.string.dismiss),
+    confirmText: String = stringResource(R.string.settings),
     containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
     btnColor: Color = MaterialTheme.colorScheme.primary
 ) {
@@ -78,7 +80,7 @@ fun RationaleDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = btnColor)
             ) {
                 Text(
-                    text = stringResource(R.string.settings)
+                    text = confirmText
                 )
             }
         },
@@ -91,7 +93,7 @@ fun RationaleDialog(
 
             ) {
                 Text(
-                    text = stringResource(R.string.dismiss),
+                    text = dismissText,
                     color = btnColor
                 )
             }
