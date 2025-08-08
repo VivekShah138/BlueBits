@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -22,6 +23,7 @@ import com.example.bluebits.domain.model.UserDevice
 @Composable
 fun AvailableDevices(
     devices: List<UserDevice>,
+    isScanning: Boolean,
     onRefreshClicked: () -> Unit,
 ) {
     Column(
@@ -48,7 +50,15 @@ fun AvailableDevices(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (devices.isEmpty()) {
+        if (isScanning) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (devices.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -73,6 +83,7 @@ fun AvailableDevices(
     }
 }
 
+
 @Preview(
     showBackground = true,
     showSystemUi = true
@@ -90,5 +101,6 @@ fun PreviewAvailableDevicesSimple() {
     AvailableDevices (
         devices = sampleDevices,
         onRefreshClicked = { /* trigger refresh scan */ },
+        isScanning = true
     )
 }

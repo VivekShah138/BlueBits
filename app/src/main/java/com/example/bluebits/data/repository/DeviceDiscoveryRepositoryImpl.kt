@@ -54,7 +54,7 @@ class DeviceDiscoveryRepositoryImpl(
                                 name = it.name,
                                 address = it.address,
                                 isPaired = it.bondState == AndroidBluetoothDevice.BOND_BONDED,
-                                isConnected = false // you can enhance connection info later
+                                isConnected = false
                             )
                         )
                     }

@@ -10,7 +10,8 @@ val viewModelModule = module {
 
     viewModel {
         OldConnectionsViewModel(
-            oldConnectionsUseCaseWrapper = get()
+            oldConnectionsUseCaseWrapper = get(),
+            bluetoothManager = get()
         )
     }
 
