@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.example.bluebits.navigation.chatGraph
 import com.example.bluebits.navigation.oldConnectionsGraph
 import com.example.bluebits.navigation.settingsGraph
 import com.example.bluebits.navigation.splashGraph
@@ -28,6 +29,10 @@ fun BlueBitsNavHost(
         )
 
         settingsGraph(
+            navController = navController
+        )
+
+        chatGraph(
             navController = navController
         )
     }

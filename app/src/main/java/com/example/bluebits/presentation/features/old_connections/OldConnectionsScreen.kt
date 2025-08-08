@@ -19,6 +19,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.bluebits.domain.repository.BluetoothManager
 import com.example.bluebits.presentation.core_components.AppTopBar
@@ -31,6 +32,9 @@ import org.koin.compose.viewmodel.koinViewModel
 import com.example.bluebits.presentation.features.old_connections.components.PermissionDialogs
 import com.example.bluebits.utils.BluetoothState
 import com.example.bluebits.utils.DialogType
+import com.example.bluebits.R
+import com.example.bluebits.navigation.core.Screens
+import com.example.bluebits.presentation.core_components.MenuItems
 import com.example.bluebits.utils.createSettingsIntent
 import com.example.bluebits.utils.requestMultiplePermissionLogic
 import org.koin.compose.koinInject
@@ -38,7 +42,7 @@ import org.koin.compose.koinInject
 @Composable
 fun OldConnectionsRoot(
     viewModel: OldConnectionsViewModel = koinViewModel(),
-    navController: NavController
+    navController: NavHostController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val bluetoothManager: BluetoothManager = koinInject()
@@ -167,7 +171,7 @@ fun OldConnectionsRoot(
 
 @Composable
 fun OldConnectionsScreen(
-    navController: NavController,
+    navController : NavHostController,
     state: OldConnectionsStates,
     onEvent: (OldConnectionsEvents) -> Unit,
     onStartDiscovery: () -> Unit
@@ -180,7 +184,17 @@ fun OldConnectionsScreen(
         },
         topBar = {
             AppTopBar(
-                title = "Old Connections"
+                title = "Old Connections",
+                showMenu = true,
+                menuItems = listOf(
+                    MenuItems(
+                        text = "Chats",
+                        onClick = {
+                            navController.navigate(Screens.ChatScreen)
+                        }
+                    )
+
+                )
             )
         }
     ) { innerPadding ->

@@ -84,4 +84,7 @@ dependencies {
 
     // KSP dependency for Room compiler
     ksp(libs.androidx.room.compiler)
+
+    // coil
+    implementation(libs.coil.compose)
 }
